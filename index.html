@@ -1,0 +1,3227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WELLSYNC パーキンソン病情報サイト ワイヤーフレーム v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================
+     設計コメント（カラーパレット更新版）:
+     - 4色パレット: #4A4466 (ダークパープル / ink) ・ #6EADBC (ティールブルー / accent) ・
+       #9FCBAD (セージグリーン / safe) ・ #F1F7D4 (ペールイエローグリーン / bg-warm)
+     - 医療・介護サイトとして「温かみ + 清潔感 + 信頼」を両立
+     - 明朝(Noto Serif JP)を見出しに、ゴシック(Noto Sans JP)を本文に混植
+       → AI記事感を消すための「編集感」を演出
+     - ワイヤーフレームなので画像はプレースホルダー(灰色枠 + ラベル)
+     ============================ */
+
+  :root {
+    /* === New Palette ===
+       #4A4466 ink (ダークパープル) — テキスト・見出し
+       #6EADBC accent (ティールブルー) — CTA・アクセント
+       #9FCBAD safe (セージグリーン) — サブアクセント・タグ
+       #F1F7D4 bg-warm (ペールイエローグリーン) — 背景・帯
+       ==================== */
+    --bg: #FBFCF4;
+    --bg-card: #FFFFFF;
+    --bg-soft: #F1F7D4;
+    --bg-warm: #F1F7D4;
+    --ink: #4A4466;
+    --ink-soft: #6B6585;
+    --ink-mute: #9E99B0;
+    --accent: #6EADBC;
+    --accent-dark: #4F8E9D;
+    --accent-soft: #B8DDE5;
+    --safe: #9FCBAD;
+    --safe-dark: #6FA47E;
+    --line: #E2E1D0;
+    --serif: 'Noto Serif JP', serif;
+    --sans: 'Noto Sans JP', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.8;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============ Wireframe note bar ============ */
+  .wf-banner {
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 12px;
+    font-family: var(--sans);
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+  .wf-banner strong { color: var(--accent-soft); }
+
+  .wf-nav {
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 20px;
+    text-align: center;
+    font-size: 13px;
+  }
+  .wf-nav a {
+    color: var(--ink);
+    text-decoration: none;
+    margin: 0 12px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+  .wf-nav a:hover { background: var(--accent-soft); }
+
+  /* ============ Layout ============ */
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ============ Header ============ */
+  header.site-header {
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 0;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .header-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: 0.05em;
+  }
+  .logo small {
+    display: block;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+  nav.global-nav ul {
+    list-style: none;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+  nav.global-nav a {
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  nav.global-nav a:hover { color: var(--accent); }
+  .line-btn {
+    background: var(--accent);
+    color: #fff !important;
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* ============ Section base ============ */
+  section {
+    padding: 64px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .section-tag {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    padding: 4px 10px;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+  }
+  h2.section-title {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+  h2.section-title .accent { color: var(--accent); }
+  .section-lead {
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 640px;
+    margin-bottom: 40px;
+  }
+
+  /* ============ Section 1: Hero ============ */
+  .hero {
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-warm) 100%);
+    padding: 80px 0 100px;
+  }
+  .hero-inner {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: 38px;
+    line-height: 1.5;
+    font-weight: 500;
+    margin-bottom: 20px;
+    letter-spacing: 0.02em;
+  }
+  .hero h1 .accent {
+    color: var(--accent-dark);
+    border-bottom: 3px solid var(--safe);
+    padding-bottom: 4px;
+  }
+  .hero p.hero-lead {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin-bottom: 28px;
+    line-height: 2;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink-mute);
+  }
+  .hero-meta::before {
+    content: "";
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--ink-mute);
+  }
+
+  /* ============ Placeholder ============ */
+  .placeholder {
+    background: repeating-linear-gradient(
+      45deg,
+      #DAD9C5,
+      #DAD9C5 8px,
+      #E8E7D2 8px,
+      #E8E7D2 16px
+    );
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-mute);
+    font-size: 12px;
+    font-family: var(--sans);
+    letter-spacing: 0.1em;
+  }
+  .placeholder.hero-img { aspect-ratio: 4/5; }
+  .placeholder.square { aspect-ratio: 1/1; }
+  .placeholder.wide { aspect-ratio: 16/9; }
+  .placeholder.avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .placeholder.avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ============ Section 2: 逆引きガイド ============ */
+  .reverse-guide {
+    background: var(--bg-card);
+  }
+  .reverse-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .reverse-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 24px 22px;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .reverse-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(44, 62, 80, 0.08);
+  }
+  .reverse-card .trouble {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .reverse-card .trouble::before {
+    content: "「";
+    color: var(--accent);
+  }
+  .reverse-card .trouble::after {
+    content: "」";
+    color: var(--accent);
+  }
+  .reverse-card .article-link {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .reverse-card .article-link::before {
+    content: "→ ";
+    color: var(--accent);
+  }
+  .reverse-card .wellsync-tag {
+    display: inline-block;
+    font-size: 11px;
+    background: var(--safe);
+    color: #2D5638;
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-top: 8px;
+  }
+
+  /* ============ Section 3: 7 Categories ============ */
+  .categories {
+    background: var(--bg);
+  }
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .category-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 28px 20px;
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .category-card:hover {
+    border-color: var(--accent);
+  }
+  .category-card.featured {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .category-card.featured .cat-num,
+  .category-card.featured .cat-desc { color: var(--accent-soft); }
+  .category-card.wip {
+    background: var(--bg-soft);
+    opacity: 0.85;
+  }
+  .cat-num {
+    font-family: var(--serif);
+    font-size: 28px;
+    color: var(--accent);
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+  .cat-name {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .cat-desc {
+    font-size: 11px;
+    color: var(--ink-mute);
+    line-height: 1.6;
+  }
+  .featured-tag {
+    position: absolute;
+    top: -10px;
+    right: 12px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ============ Section 4: Featured Articles ============ */
+  .featured-articles {
+    background: var(--bg-card);
+  }
+  .article-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 28px;
+  }
+  .article-card {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .article-card:hover {
+    box-shadow: 0 8px 24px rgba(44, 62, 80, 0.08);
+  }
+  .article-card .placeholder { aspect-ratio: 16/9; }
+  .article-card-body { padding: 24px; }
+  .article-tag {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 2px 8px;
+    margin-bottom: 12px;
+  }
+  .article-title {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .article-excerpt {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .article-supervisor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .supervisor-info { font-size: 12px; }
+  .supervisor-name {
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .supervisor-role {
+    color: var(--ink-mute);
+    font-size: 11px;
+  }
+
+  /* ============ Section 5: About WELLSYNC ============ */
+  .about-wellsync {
+    background: var(--bg-soft);
+  }
+  .about-inner {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 60px;
+    align-items: center;
+  }
+  .about-quote {
+    font-family: var(--serif);
+    font-size: 22px;
+    line-height: 1.9;
+    color: var(--ink);
+    font-weight: 400;
+    margin-bottom: 28px;
+    letter-spacing: 0.02em;
+  }
+  .about-quote::before {
+    content: "“";
+    font-size: 50px;
+    color: var(--accent);
+    line-height: 0;
+    vertical-align: -20px;
+    margin-right: 4px;
+  }
+  .about-body {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 2;
+  }
+  .about-author {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .about-author-text {
+    font-size: 13px;
+  }
+  .author-name {
+    font-family: var(--serif);
+    font-weight: 500;
+  }
+
+  /* ============ Section 6: Contact ============ */
+  .contact {
+    background: var(--ink);
+    color: #fff;
+    text-align: center;
+  }
+  .contact h2 { color: #fff; }
+  .contact .section-lead { color: rgba(255,255,255,0.7); margin: 0 auto 40px; }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .contact-card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    padding: 32px 24px;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .contact-card:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: var(--accent-soft);
+  }
+  .contact-card .step {
+    font-family: var(--serif);
+    font-size: 12px;
+    color: var(--accent-soft);
+    margin-bottom: 12px;
+    letter-spacing: 0.2em;
+  }
+  .contact-card .title {
+    font-family: var(--serif);
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+  .contact-card .desc {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.8;
+  }
+
+  /* ============ Footer ============ */
+  footer {
+    background: #2F2A45;
+    color: rgba(255,255,255,0.6);
+    padding: 40px 0 24px;
+    font-size: 12px;
+  }
+  .footer-inner {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 40px;
+  }
+  .footer-links {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .footer-links h4 {
+    color: #fff;
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+  .footer-links ul { list-style: none; }
+  .footer-links li { margin-bottom: 6px; }
+  .footer-links a { color: rgba(255,255,255,0.6); text-decoration: none; }
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.1);
+    margin-top: 32px;
+    padding-top: 20px;
+    text-align: center;
+    font-size: 11px;
+  }
+
+  /* ============ Article Page Style ============ */
+  .article-page {
+    background: var(--bg);
+    padding: 60px 0 0;
+  }
+  .article-divider {
+    height: 80px;
+    background: linear-gradient(180deg, var(--bg-soft) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px dashed var(--accent);
+    margin-top: 80px;
+  }
+  .divider-label {
+    background: var(--bg);
+    padding: 8px 24px;
+    font-family: var(--serif);
+    font-size: 14px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    letter-spacing: 0.1em;
+  }
+  .article-container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .article-breadcrumb {
+    font-size: 12px;
+    color: var(--ink-mute);
+    margin-bottom: 20px;
+  }
+  .article-breadcrumb a { color: var(--ink-mute); text-decoration: none; }
+  .article-breadcrumb a:hover { color: var(--accent); }
+  .article-header h1 {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+  .article-meta {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 32px;
+    font-size: 12px;
+    color: var(--ink-mute);
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .supervisor-block {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    padding: 20px 22px;
+    margin: 24px 0 36px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .supervisor-block .supervisor-info { font-size: 13px; flex: 1; }
+  .supervisor-block .supervisor-comment {
+    font-family: var(--serif);
+    font-size: 14px;
+    line-height: 1.9;
+    margin-top: 8px;
+    color: var(--ink);
+  }
+  .article-toc {
+    background: var(--bg-soft);
+    padding: 20px 24px;
+    margin-bottom: 36px;
+    border-radius: 2px;
+  }
+  .article-toc h3 {
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+  .article-toc ol {
+    padding-left: 20px;
+    font-size: 13px;
+    line-height: 2;
+    color: var(--ink-soft);
+  }
+  .article-toc a { color: var(--ink-soft); text-decoration: none; }
+  .article-toc a:hover { color: var(--accent); }
+  .article-body h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    margin: 40px 0 16px;
+    padding-left: 16px;
+    border-left: 4px solid var(--accent);
+    line-height: 1.5;
+  }
+  .article-body h3 {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 500;
+    margin: 24px 0 12px;
+    color: var(--ink);
+  }
+  .article-body p {
+    font-size: 15px;
+    margin-bottom: 16px;
+    color: var(--ink);
+  }
+  .article-body ul, .article-body ol {
+    margin: 12px 0 20px 24px;
+    font-size: 14px;
+  }
+  .article-body li { margin-bottom: 6px; }
+  .field-note {
+    background: var(--bg-card);
+    border: 1px dashed var(--accent);
+    padding: 20px 22px;
+    margin: 28px 0;
+  }
+  .field-note .label {
+    font-family: var(--serif);
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 8px;
+  }
+  .field-note .body {
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--ink-soft);
+  }
+  .inline-cta {
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    padding: 24px 28px;
+    margin: 32px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+  }
+  .inline-cta-text {
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 1.7;
+    flex: 1;
+  }
+  .inline-cta-btn {
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 2px;
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .faq {
+    margin: 40px 0;
+  }
+  .faq h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--accent);
+    padding-left: 16px;
+  }
+  .faq-item {
+    border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .faq-q {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .faq-q::before { content: "Q. "; color: var(--accent); }
+  .faq-a {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.9;
+  }
+  .faq-a::before { content: "A. "; color: var(--safe); font-weight: 500; }
+  .article-footer-cta {
+    background: var(--ink);
+    color: #fff;
+    padding: 40px;
+    margin: 48px 0 0;
+    text-align: center;
+    border-radius: 2px;
+  }
+  .article-footer-cta h3 {
+    font-family: var(--serif);
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .article-footer-cta p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 20px;
+  }
+  .article-footer-cta button {
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 24px;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0 6px;
+  }
+  .article-footer-cta button.outline {
+    background: transparent;
+    border: 1px solid #fff;
+  }
+
+  /* ============ Note Box (設計コメント) ============ */
+  .note-box {
+    background: var(--bg-warm);
+    border: 1px dashed var(--accent-dark);
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-size: 12px;
+    color: #4A4466;
+    line-height: 1.7;
+  }
+  .note-box strong { color: var(--accent-dark); }
+
+  /* ============ Company Info Block (固定／全記事末尾） ============ */
+  .company-block {
+    margin: 56px 0 32px;
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+  }
+  .company-band {
+    background: var(--bg-warm);
+    color: var(--ink);
+    text-align: center;
+    padding: 14px 20px;
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+    border-bottom: 1px solid var(--line);
+  }
+  .company-intro {
+    padding: 28px 32px 8px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 2;
+  }
+  .company-intro strong { color: var(--accent); font-weight: 500; }
+
+  /* 2つのサービスカードを並列 */
+  .service-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 0 32px 32px;
+  }
+  .service-card {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  .service-card .service-img {
+    aspect-ratio: 16/10;
+    margin-bottom: 16px;
+  }
+  .service-card .service-label {
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+  }
+  .service-card .service-name {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .service-card .service-desc {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.9;
+    margin-bottom: 14px;
+    flex: 1;
+  }
+  .service-card .service-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .service-card .service-features li {
+    padding: 4px 0 4px 18px;
+    position: relative;
+    line-height: 1.7;
+  }
+  .service-card .service-features li::before {
+    content: "●";
+    color: var(--accent);
+    position: absolute;
+    left: 0;
+    font-size: 8px;
+    top: 9px;
+  }
+  .service-card .service-meta {
+    font-size: 11px;
+    color: var(--ink-mute);
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+    line-height: 1.8;
+  }
+
+  /* 対応エリア表示 */
+  .service-area {
+    margin: 0 32px 24px;
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    text-align: center;
+  }
+  .service-area .area-label {
+    display: inline-block;
+    background: var(--bg-soft);
+    color: var(--ink-soft);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    padding: 3px 14px;
+    margin-bottom: 10px;
+  }
+  .service-area .area-list {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+    line-height: 1.7;
+  }
+  .service-area .area-note {
+    font-size: 11px;
+    color: var(--ink-mute);
+  }
+
+  /* 電話・LINEの大ボタン */
+  .contact-channels {
+    padding: 0 32px 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .tel-btn, .line-big-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: opacity 0.2s;
+  }
+  .tel-btn:hover, .line-big-btn:hover { opacity: 0.85; }
+  .tel-btn {
+    background: var(--ink);
+    color: #fff;
+  }
+  .line-big-btn {
+    background: var(--safe-dark);
+    color: #fff;
+  }
+  .channel-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+  .channel-main {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+  }
+  .channel-sub {
+    font-size: 11px;
+    margin-top: 6px;
+    opacity: 0.75;
+  }
+
+  /* お問い合わせフォーム */
+  .contact-form-block {
+    background: var(--bg-soft);
+    padding: 28px 32px;
+    border-top: 1px solid var(--line);
+  }
+  .form-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .form-heading::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+    background: var(--accent);
+  }
+  .form-heading h4 {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .form-heading .form-note {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-mute);
+  }
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 14px;
+  }
+  .form-row label {
+    font-size: 12px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-row .req {
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.05em;
+  }
+  .form-row .opt {
+    background: var(--ink-mute);
+    color: #fff;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 2px;
+  }
+  .form-row input, .form-row textarea, .form-row select {
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: var(--sans);
+    color: var(--ink);
+    border-radius: 2px;
+  }
+  .form-row textarea { min-height: 80px; resize: vertical; }
+  .form-consent {
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin: 12px 0 18px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .form-submit {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 14px;
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  /* 会社概要 */
+  .company-profile {
+    border-top: 1px solid var(--line);
+    padding: 24px 32px;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 12px 24px;
+    font-size: 12px;
+    line-height: 1.9;
+    background: var(--bg-card);
+  }
+  .company-profile dt {
+    color: var(--ink-mute);
+    border-right: 1px solid var(--line);
+    padding-right: 12px;
+  }
+  .company-profile dd {
+    color: var(--ink);
+  }
+
+  /* ============ SNS section ============ */
+  .sns-section {
+    background: var(--bg);
+  }
+  .sns-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .sns-card {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: var(--ink);
+    transition: all 0.2s;
+    position: relative;
+  }
+  .sns-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(74, 68, 102, 0.1);
+    border-color: var(--accent);
+  }
+  .sns-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .sns-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .sns-icon.ig {
+    background: linear-gradient(135deg, #6EADBC 0%, #9FCBAD 100%);
+  }
+  .sns-icon.yt { background: var(--ink); }
+  .sns-icon.tt { background: #4A4466; }
+  .sns-icon.ln { background: var(--safe-dark); }
+  .sns-name {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .sns-handle {
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-top: 2px;
+  }
+  .sns-desc {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.8;
+    margin-bottom: 14px;
+    flex: 1;
+  }
+  .sns-preview {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .sns-preview .placeholder {
+    aspect-ratio: 1/1;
+    font-size: 9px;
+    letter-spacing: 0;
+  }
+  .sns-preview.video {
+    grid-template-columns: 1fr;
+  }
+  .sns-preview.video .placeholder {
+    aspect-ratio: 16/9;
+  }
+  .sns-cta {
+    font-size: 12px;
+    color: var(--accent-dark);
+    font-weight: 500;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+  .sns-cta::after {
+    content: " →";
+  }
+
+  /* ============ Glossary teaser (トップページ用) ============ */
+  .glossary-teaser {
+    background: var(--bg-card);
+  }
+  .glossary-teaser-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .glossary-teaser-head .lead-wrap { flex: 1; min-width: 240px; }
+  .glossary-view-all {
+    font-size: 13px;
+    color: var(--accent-dark);
+    text-decoration: none;
+    padding: 8px 14px;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .glossary-view-all:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+  .glossary-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .glossary-quick-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 16px 18px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: all 0.2s;
+  }
+  .glossary-quick-card:hover {
+    border-color: var(--accent);
+    background: var(--bg-warm);
+  }
+  .gqc-term {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .gqc-desc {
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+  }
+
+  /* ============ Glossary page ============ */
+  .glossary-page {
+    background: var(--bg);
+    padding: 60px 0 80px;
+  }
+  .glossary-hero {
+    background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg) 100%);
+    padding: 48px 0;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 48px;
+  }
+  .glossary-hero h1 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    letter-spacing: 0.02em;
+  }
+  .glossary-hero p {
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.9;
+    max-width: 640px;
+  }
+  .glossary-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 48px;
+  }
+  .glossary-toc-sticky {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+    border-left: 2px solid var(--line);
+    padding-left: 18px;
+  }
+  .glossary-toc-sticky h4 {
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: var(--ink);
+    letter-spacing: 0.1em;
+  }
+  .glossary-toc-sticky ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .glossary-toc-sticky li {
+    margin-bottom: 8px;
+  }
+  .glossary-toc-sticky a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 12px;
+    line-height: 1.6;
+    transition: color 0.2s;
+  }
+  .glossary-toc-sticky a:hover { color: var(--accent-dark); }
+  .glossary-toc-sticky .toc-count {
+    color: var(--ink-mute);
+    font-size: 10px;
+    margin-left: 4px;
+  }
+
+  .glossary-group {
+    margin-bottom: 56px;
+  }
+  .glossary-group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .glossary-group-head .group-num {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .glossary-group-head h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .glossary-group-head .group-meta {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--ink-mute);
+  }
+  .glossary-entry {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    padding: 24px 28px;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .glossary-entry:hover { border-color: var(--accent-soft); }
+  .glossary-entry-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .glossary-term {
+    font-family: var(--serif);
+    font-size: 19px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .glossary-reading {
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: 0.05em;
+  }
+  .glossary-en {
+    font-size: 11px;
+    color: var(--ink-mute);
+    font-style: italic;
+    margin-left: auto;
+  }
+  .glossary-def {
+    font-size: 14px;
+    line-height: 2;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .glossary-related {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+    align-items: center;
+  }
+  .glossary-related-label {
+    font-size: 11px;
+    color: var(--ink-mute);
+    margin-right: 4px;
+  }
+  .glossary-related a {
+    font-size: 11px;
+    background: var(--bg-warm);
+    color: var(--accent-dark);
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--line);
+    transition: all 0.2s;
+  }
+  .glossary-related a:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* ============ Inline term link (記事内の用語ハイライト) ============ */
+  .term-link {
+    color: var(--accent-dark);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent);
+    padding-bottom: 1px;
+    cursor: help;
+  }
+  .term-link:hover {
+    background: var(--bg-warm);
+    border-bottom-style: solid;
+  }
+
+  /* ============ Responsive ============ */
+  @media (max-width: 768px) {
+    .hero-inner, .about-inner, .footer-inner { grid-template-columns: 1fr; }
+    .reverse-grid, .category-grid, .article-grid, .contact-grid {
+      grid-template-columns: 1fr;
+    }
+    .sns-grid { grid-template-columns: 1fr 1fr; }
+    .glossary-quick-grid { grid-template-columns: 1fr 1fr; }
+    .glossary-layout { grid-template-columns: 1fr; }
+    .glossary-toc-sticky { position: static; }
+    .hero h1 { font-size: 28px; }
+    h2.section-title { font-size: 24px; }
+    .footer-links { grid-template-columns: 1fr 1fr; }
+    .service-pair, .contact-channels { grid-template-columns: 1fr; }
+    .company-profile { grid-template-columns: 1fr; }
+    .company-profile dt { border-right: none; border-bottom: 1px solid var(--line); padding: 0 0 4px; }
+    .company-intro, .service-pair, .service-area, .contact-channels, .contact-form-block, .company-profile { padding-left: 20px; padding-right: 20px; }
+    .service-area { margin-left: 20px; margin-right: 20px; }
+    .channel-main { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ ワイヤーフレーム説明バー ============ -->
+<div class="wf-banner">
+  <strong>WELLSYNC パーキンソン病情報サイト ワイヤーフレーム v0.1</strong>　|　画像はすべてプレースホルダー　|　点線枠 = 設計意図のメモ
+</div>
+
+<div class="wf-nav">
+  <a href="#top">トップページ</a>
+  <a href="#article1">記事①在宅リハ</a>
+  <a href="#article2">記事②施設選び</a>
+  <a href="#article3">記事③難病申請</a>
+  <a href="#article4">記事④ウェアリングオフ</a>
+  <a href="#glossary">用語集</a>
+</div>
+
+<!-- ============================================================
+     【トップページ】
+============================================================ -->
+<div id="top">
+
+<!-- Header -->
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="logo">
+      WELLSYNC
+      <small>パーキンソン病情報サイト</small>
+    </div>
+    <nav class="global-nav">
+      <ul>
+        <li><a href="#">病気を知る</a></li>
+        <li><a href="#">治療</a></li>
+        <li><a href="#">生活・ケア</a></li>
+        <li><a href="#">家族</a></li>
+        <li><a href="#">制度・お金</a></li>
+        <li><a href="#">医療・相談</a></li>
+        <li><a href="#glossary">用語集</a></li>
+        <li><a href="#" class="line-btn">LINE相談</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<!-- ============ 1. Hero ============ -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div>
+      <span class="section-tag">FOR YOU</span>
+      <h1>
+        あなたの<span class="accent">今の困りごと</span>から、<br>
+        必要な情報と<br>
+        相談先にたどり着けるサイト。
+      </h1>
+      <p class="hero-lead">
+        パーキンソン病と向き合うご本人とご家族へ。<br>
+        名古屋市天白区の訪問看護・ナーシングホーム「かんな」を運営する WELLSYNC が、現場の知見を持ち寄って情報をまとめています。
+      </p>
+      <div class="hero-meta">
+        運営：WELLSYNC　|　監修：医療・リハビリ専門職
+      </div>
+    </div>
+    <div class="placeholder hero-img">[写真：在宅でのケアの一場面・実写推奨]</div>
+  </div>
+</section>
+
+<!-- 設計コメント -->
+<div class="container">
+  <div class="note-box">
+    <strong>設計意図 — ヒーロー：</strong>
+    「パーキンソン病情報サイト」と書かずに「あなたの困りごとから」と書くことで、サイトの "機能" を1文で伝える。
+    AI記事感を消す最大のレバーは「主語が誰か」を明確にすること。WELLSYNC・運営者名・監修者を冒頭に出す。
+  </div>
+</div>
+
+<!-- ============ 2. 逆引きガイド ============ -->
+<section class="reverse-guide" id="reverse">
+  <div class="container">
+    <span class="section-tag">★ 差別化の核</span>
+    <h2 class="section-title">今の<span class="accent">困りごと</span>から探す</h2>
+    <p class="section-lead">
+      「歩行が不安」「薬が効かない時間がある」「介護に疲れた」——
+      症状や状況の言葉から、関連する記事と、必要であれば専門職への相談先までご案内します。
+    </p>
+
+    <div class="reverse-grid">
+      <div class="reverse-card">
+        <div class="trouble">歩行が不安定になってきた</div>
+        <div class="article-link">リハビリ、転倒予防の記事へ</div>
+        <span class="wellsync-tag">訪問リハビリ（PT）に相談</span>
+      </div>
+      <div class="reverse-card">
+        <div class="trouble">薬が効かない時間がある</div>
+        <div class="article-link">ウェアリングオフ、薬の調整の記事へ</div>
+        <span class="wellsync-tag">訪問看護で服薬管理</span>
+      </div>
+      <div class="reverse-card">
+        <div class="trouble">夜中に大声を出す・暴れる</div>
+        <div class="article-link">非運動症状、家族のセルフケアへ</div>
+        <span class="wellsync-tag">訪問看護・施設入居も検討</span>
+      </div>
+      <div class="reverse-card">
+        <div class="trouble">食事中にむせることが増えた</div>
+        <div class="article-link">誤嚥予防、食事の工夫の記事へ</div>
+        <span class="wellsync-tag">訪問看護で嚥下評価</span>
+      </div>
+      <div class="reverse-card">
+        <div class="trouble">自宅での生活が限界になってきた</div>
+        <div class="article-link">施設選び、ナーシングホームの記事へ</div>
+        <span class="wellsync-tag">ナーシングホームかんな</span>
+      </div>
+      <div class="reverse-card">
+        <div class="trouble">介護に疲れてしまった</div>
+        <div class="article-link">家族のセルフケア、レスパイトへ</div>
+        <span class="wellsync-tag">訪問看護導入・ショートステイ</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="note-box">
+    <strong>設計意図 — 逆引きガイド：</strong>
+    既存サイトとの最大の差別化ポイント。<strong>カテゴリ網羅（次セクション）より上に置く</strong>。
+    「困りごと→記事→WELLSYNCの具体的なサービス」の三点セットで、相談導線の入口を最初に提示する。
+  </div>
+</div>
+
+<!-- ============ 3. 7カテゴリ ============ -->
+<section class="categories">
+  <div class="container">
+    <span class="section-tag">CATEGORY</span>
+    <h2 class="section-title">カテゴリから探す</h2>
+    <p class="section-lead">
+      もう少し体系的に知りたい方へ。基礎知識から制度の話まで、7つのテーマで整理しています。
+    </p>
+
+    <div class="category-grid">
+      <div class="category-card">
+        <div class="cat-num">01</div>
+        <div class="cat-name">病気を知る</div>
+        <div class="cat-desc">原因・症状・進行</div>
+      </div>
+      <div class="category-card">
+        <div class="cat-num">02</div>
+        <div class="cat-name">治療を知る</div>
+        <div class="cat-desc">薬・DBS・リハビリ</div>
+      </div>
+      <div class="category-card">
+        <div class="cat-num">03</div>
+        <div class="cat-name">生活・ケアの工夫</div>
+        <div class="cat-desc">食事・転倒予防</div>
+      </div>
+      <div class="category-card">
+        <div class="cat-num">04</div>
+        <div class="cat-name">家族の悩みとケア</div>
+        <div class="cat-desc">介護疲れ・接し方</div>
+      </div>
+      <div class="category-card">
+        <div class="cat-num">05</div>
+        <div class="cat-name">制度・お金</div>
+        <div class="cat-desc">難病申請・介護保険</div>
+      </div>
+      <div class="category-card featured">
+        <span class="featured-tag">★主力</span>
+        <div class="cat-num">06</div>
+        <div class="cat-name">医療・相談先</div>
+        <div class="cat-desc">専門医・訪問・施設</div>
+      </div>
+      <div class="category-card wip">
+        <div class="cat-num">07</div>
+        <div class="cat-name">体験談・コラム</div>
+        <div class="cat-desc">準備中（最初の1本を公開予定）</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="note-box">
+    <strong>設計意図 — カテゴリ：</strong>
+    7番目「体験談」は「準備中」ではなく <strong>「最初の1本を公開予定」</strong> と書くだけで信頼感が変わる。
+    6番目「医療・相談先」はWELLSYNC主力商品の入口なので、黒背景＋「★主力」ラベルで自然に視線が集まるよう設計。
+  </div>
+</div>
+
+<!-- ============ 3-2. 用語集ティーザー ============ -->
+<section class="glossary-teaser">
+  <div class="container">
+    <div class="glossary-teaser-head">
+      <div class="lead-wrap">
+        <span class="section-tag">GLOSSARY</span>
+        <h2 class="section-title">用語から<span class="accent">探す</span></h2>
+        <p class="section-lead">
+          「ウェアリングオフって何？」「ヤール分類って？」——
+          パーキンソン病の医療・介護でよく出てくる用語を、やさしい言葉でまとめています。
+        </p>
+      </div>
+      <a href="#glossary" class="glossary-view-all">用語集をすべて見る</a>
+    </div>
+
+    <div class="glossary-quick-grid">
+      <a href="#glossary" class="glossary-quick-card">
+        <div class="gqc-term">ウェアリングオフ</div>
+        <div class="gqc-desc">薬の効果が時間とともに切れる現象</div>
+      </a>
+      <a href="#glossary" class="glossary-quick-card">
+        <div class="gqc-term">ヤール分類</div>
+        <div class="gqc-desc">進行度を示す5段階の評価尺度</div>
+      </a>
+      <a href="#glossary" class="glossary-quick-card">
+        <div class="gqc-term">ジスキネジア</div>
+        <div class="gqc-desc">薬の副作用で起こる不随意運動</div>
+      </a>
+      <a href="#glossary" class="glossary-quick-card">
+        <div class="gqc-term">DBS（脳深部刺激療法）</div>
+        <div class="gqc-desc">脳に電極を入れる外科治療</div>
+      </a>
+      <a href="#glossary" class="glossary-quick-card">
+        <div class="gqc-term">指定難病</div>
+        <div class="gqc-desc">医療費助成の対象となる病気の制度</div>
+      </a>
+      <a href="#glossary" class="glossary-quick-card">
+        <div class="gqc-term">レスパイトケア</div>
+        <div class="gqc-desc">家族介護者の休息のためのサービス</div>
+      </a>
+      <a href="#glossary" class="glossary-quick-card">
+        <div class="gqc-term">ナーシングホーム</div>
+        <div class="gqc-desc">看護師配置が手厚い住宅型施設</div>
+      </a>
+      <a href="#glossary" class="glossary-quick-card">
+        <div class="gqc-term">すくみ足</div>
+        <div class="gqc-desc">歩き出しで足が動かなくなる症状</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="note-box">
+    <strong>設計意図 — 用語集ティーザー（SEO観点）：</strong>
+    「○○とは」「○○ 意味」の検索流入を取りに行く入口。<strong>逆引きガイドが「困りごとから」入る入口だとすれば、こちらは「言葉から」入る入口</strong>。両方を用意することで、サイト全体のSEO網羅性が大きく上がる。
+    各用語カードは用語集ページの該当エントリにアンカーリンクで飛ばす設計。
+  </div>
+</div>
+
+<!-- ============ 4. 注目記事 ============ -->
+<section class="featured-articles">
+  <div class="container">
+    <span class="section-tag">PICK UP</span>
+    <h2 class="section-title">監修済みの<span class="accent">注目記事</span></h2>
+    <p class="section-lead">
+      まずはこの4本から。医療・リハビリの現場で患者さんと向き合っている専門職が監修した記事です。
+    </p>
+
+    <div class="article-grid">
+      <!-- Article 1 -->
+      <a href="#article1" class="article-card" style="text-decoration:none;color:inherit;">
+        <div class="placeholder">[記事①ヘッダー画像：訪問リハビリの様子]</div>
+        <div class="article-card-body">
+          <span class="article-tag">医療・相談先</span>
+          <h3 class="article-title">在宅でリハビリを続けるには？<br>訪問看護・訪問リハの役割</h3>
+          <p class="article-excerpt">通院が難しくなっても、リハビリは続けられます。介護保険・医療保険の使い分けと、自宅でできる訓練の実際を、現場のPTが解説します。</p>
+          <div class="article-supervisor">
+            <div class="placeholder avatar-sm">PT</div>
+            <div class="supervisor-info">
+              <div class="supervisor-name">監修：高橋〇〇</div>
+              <div class="supervisor-role">理学療法士／訪問看護ステーションかんな</div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Article 2 -->
+      <a href="#article2" class="article-card" style="text-decoration:none;color:inherit;">
+        <div class="placeholder">[記事②ヘッダー画像：施設外観・実写推奨]</div>
+        <div class="article-card-body">
+          <span class="article-tag">医療・相談先</span>
+          <h3 class="article-title">パーキンソン病の方が<br>施設を選ぶときのチェックポイント</h3>
+          <p class="article-excerpt">特養・有料・サ高住・ナーシングホーム…種類が多くて迷う方へ。神経難病に対応している施設を見極める5つの観点を整理しました。</p>
+          <div class="article-supervisor">
+            <div class="placeholder avatar-sm">看</div>
+            <div class="supervisor-info">
+              <div class="supervisor-name">監修：〇〇看護師</div>
+              <div class="supervisor-role">看護師／ナーシングホームかんな</div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Article 3 -->
+      <a href="#article3" class="article-card" style="text-decoration:none;color:inherit;">
+        <div class="placeholder">[記事③ヘッダー画像：図解・申請書類のイラスト]</div>
+        <div class="article-card-body">
+          <span class="article-tag">制度・お金</span>
+          <h3 class="article-title">【図解】難病申請の流れと必要書類</h3>
+          <p class="article-excerpt">指定難病に認定されると、医療費の助成が受けられます。申請の流れ、必要書類、何ヶ月かかるかをタイムスケジュールで解説。</p>
+          <div class="article-supervisor">
+            <div class="placeholder avatar-sm">MSW</div>
+            <div class="supervisor-info">
+              <div class="supervisor-name">監修：〇〇MSW</div>
+              <div class="supervisor-role">医療ソーシャルワーカー</div>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Article 4 -->
+      <a href="#article4" class="article-card" style="text-decoration:none;color:inherit;">
+        <div class="placeholder">[記事④ヘッダー画像：服薬・時計をイメージしたカット]</div>
+        <div class="article-card-body">
+          <span class="article-tag">治療を知る</span>
+          <h3 class="article-title">ウェアリングオフとは？<br>症状と対処法</h3>
+          <p class="article-excerpt">薬が効いている時間が短くなる「ウェアリングオフ」。服薬日記のつけ方から、主治医にどう相談すればよいかまで、実例を交えて。</p>
+          <div class="article-supervisor">
+            <div class="placeholder avatar-sm">看</div>
+            <div class="supervisor-info">
+              <div class="supervisor-name">監修：〇〇看護師</div>
+              <div class="supervisor-role">訪問看護ステーションかんな</div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="note-box">
+    <strong>設計意図 — 注目記事：</strong>
+    <strong>監修者の顔写真＋肩書きを必ず入れる</strong>のがAI記事感を消す最大のレバー。
+    最初は1〜2名でよい（同じ監修者が複数記事を見ても問題なし）。
+    記事④「ウェアリングオフ」は患者さん本人の悩みドンピシャなので、最初に作るべき。
+  </div>
+</div>
+
+<!-- ============ 5. About WELLSYNC ============ -->
+<section class="about-wellsync">
+  <div class="container about-inner">
+    <div class="placeholder square">[写真：運営者・実写推奨／訪問看護の現場]</div>
+    <div>
+      <span class="section-tag">ABOUT US</span>
+      <p class="about-quote">
+        パーキンソン病と暮らす方とご家族が、<br>
+        「次にどこへ相談すればいいか」<br>
+        迷わない場所を作りたい。
+      </p>
+      <p class="about-body">
+        私は、名古屋市天白区で訪問看護ステーション「かんな」とナーシングホーム「かんな」を運営しています。日々の訪問の中で、パーキンソン病の患者さんやご家族から、「症状や制度について調べても、結局誰に相談したらいいかわからない」という声を何度も聞いてきました。<br><br>
+        このサイトは、その声に応えるために作っています。情報を読んで終わりではなく、必要であればその場で専門職に相談できる——そんな道をご用意しました。
+      </p>
+      <div class="about-author">
+        <div class="placeholder avatar">運</div>
+        <div class="about-author-text">
+          <span class="author-name">石川〇〇</span><br>
+          <span style="color:var(--ink-mute);font-size:11px;">WELLSYNC 代表</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="note-box">
+    <strong>設計意図 — WELLSYNC紹介：</strong>
+    <strong>「私たち」ではなく「私」</strong>で書く。一人称が一番強い。
+    定型の会社紹介ではなく、「なぜこのサイトを作っているか」のストーリーを冒頭の引用文で見せる。
+  </div>
+</div>
+
+<!-- ============ 5-2. SNS section ============ -->
+<section class="sns-section">
+  <div class="container">
+    <span class="section-tag">SNS</span>
+    <h2 class="section-title">日々の<span class="accent">発信</span>を見る</h2>
+    <p class="section-lead">
+      パーキンソン病と暮らすためのちょっとした工夫、ケアの現場の様子、ご家族向けのリハビリ動画などを各SNSで発信しています。気になるものをフォローしてみてください。
+    </p>
+
+    <div class="sns-grid">
+      <!-- Instagram -->
+      <a href="#" class="sns-card">
+        <div class="sns-card-head">
+          <div class="sns-icon ig">IG</div>
+          <div>
+            <div class="sns-name">Instagram</div>
+            <div class="sns-handle">@wellsync_kanna</div>
+          </div>
+        </div>
+        <div class="sns-desc">
+          スタッフの日々、施設での暮らし、ご家族と取り組むケアの様子を写真で。
+        </div>
+        <div class="sns-preview">
+          <div class="placeholder">[投稿1]</div>
+          <div class="placeholder">[投稿2]</div>
+          <div class="placeholder">[投稿3]</div>
+          <div class="placeholder">[投稿4]</div>
+          <div class="placeholder">[投稿5]</div>
+          <div class="placeholder">[投稿6]</div>
+        </div>
+        <div class="sns-cta">Instagramを見る</div>
+      </a>
+
+      <!-- TikTok -->
+      <a href="#" class="sns-card">
+        <div class="sns-card-head">
+          <div class="sns-icon tt">TT</div>
+          <div>
+            <div class="sns-name">TikTok</div>
+            <div class="sns-handle">@wellsync_kanna</div>
+          </div>
+        </div>
+        <div class="sns-desc">
+          1分でわかるケアのコツ、すくみ足対策、転倒予防のヒントを短尺動画で。
+        </div>
+        <div class="sns-preview" style="grid-template-columns:1fr 1fr;">
+          <div class="placeholder" style="aspect-ratio:9/16;">[縦動画1]</div>
+          <div class="placeholder" style="aspect-ratio:9/16;">[縦動画2]</div>
+        </div>
+        <div class="sns-cta">TikTokを見る</div>
+      </a>
+
+      <!-- LINE -->
+      <a href="#" class="sns-card">
+        <div class="sns-card-head">
+          <div class="sns-icon ln">LINE</div>
+          <div>
+            <div class="sns-name">LINE公式</div>
+            <div class="sns-handle">@wellsync</div>
+          </div>
+        </div>
+        <div class="sns-desc">
+          相談窓口を兼ねた公式アカウント。月1回、新着記事のお知らせもお届け。
+        </div>
+        <div class="placeholder" style="aspect-ratio:1/1;margin-bottom:12px;">[QRコード]</div>
+        <div class="sns-cta">友だち追加する</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="note-box">
+    <strong>設計意図 — SNSセクション：</strong>
+    記事を読みに来た一見客を <strong>「フォロワー」に変える場</strong>。今すぐ相談する気はないけど、また情報を見たいという層を取りこぼさないための導線。
+    <strong>SNSごとに発信内容を変える</strong>（IG=写真／TT=短尺ハウツー／LINE=直接相談）と書き分けることで、何を見られるかが明確になる。
+    アカウント開設前でも構造だけ先に作っておけば、後で実フィードを差し替えできる。
+  </div>
+</div>
+
+<!-- ============ 6. Contact ============ -->
+<section class="contact">
+  <div class="container">
+    <span class="section-tag" style="color:var(--accent-soft);border-color:var(--accent-soft);">CONTACT</span>
+    <h2 class="section-title">専門職に<span class="accent">相談する</span></h2>
+    <p class="section-lead">
+      お困りの内容に応じて、ご希望の方法でご連絡ください。ご相談は無料です。
+    </p>
+
+    <div class="contact-grid">
+      <div class="contact-card">
+        <div class="step">STEP 01　LIGHT</div>
+        <div class="title">LINEで気軽に相談</div>
+        <div class="desc">短い質問やまずちょっと聞きたい、という方へ。チャット形式で。</div>
+      </div>
+      <div class="contact-card">
+        <div class="step">STEP 02　DETAILED</div>
+        <div class="title">フォームから相談</div>
+        <div class="desc">具体的な状況をお伺いします。担当者から数日以内にご返信。</div>
+      </div>
+      <div class="contact-card">
+        <div class="step">STEP 03　ACTION</div>
+        <div class="title">来院・施設見学</div>
+        <div class="desc">天白区・緑区・名東区の方へ、訪問看護やナーシングホームの見学も。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="note-box">
+    <strong>設計意図 — 相談導線：</strong>
+    <strong>心理的ハードルの低い順に左から並べる</strong>（LINE→フォーム→来院）。
+    各カードに「STEP 01 / 02 / 03」と入れることで、段階的に進めていいことを暗黙に伝える。
+  </div>
+</div>
+
+<!-- ============ Footer ============ -->
+<footer>
+  <div class="container footer-inner">
+    <div>
+      <div class="logo" style="color:#fff;">
+        WELLSYNC
+        <small style="color:rgba(255,255,255,0.5);">パーキンソン病情報サイト</small>
+      </div>
+      <p style="margin-top:16px;font-size:11px;line-height:1.8;">
+        運営：株式会社〇〇<br>
+        名古屋市天白区〇〇<br>
+        訪問看護ステーションかんな／ナーシングホームかんな
+      </p>
+    </div>
+    <div class="footer-links">
+      <div>
+        <h4>カテゴリ</h4>
+        <ul>
+          <li><a href="#">病気を知る</a></li>
+          <li><a href="#">治療を知る</a></li>
+          <li><a href="#">生活・ケアの工夫</a></li>
+          <li><a href="#">家族の悩みとケア</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>サイトについて</h4>
+        <ul>
+          <li><a href="#">WELLSYNCとは</a></li>
+          <li><a href="#">監修者一覧</a></li>
+          <li><a href="#">編集方針</a></li>
+          <li><a href="#glossary">用語集</a></li>
+          <li><a href="#">プライバシーポリシー</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>お問い合わせ</h4>
+        <ul>
+          <li><a href="#">LINE相談</a></li>
+          <li><a href="#">問い合わせフォーム</a></li>
+          <li><a href="#">施設見学</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    © WELLSYNC — パーキンソン病情報サイト
+  </div>
+</footer>
+</div>
+
+<!-- ============================================================
+     【優先記事①】在宅でリハビリを続けるには？
+============================================================ -->
+<div class="article-divider"><span class="divider-label">優先記事①</span></div>
+<div class="article-page" id="article1">
+  <div class="article-container">
+    <div class="article-breadcrumb">
+      <a href="#top">トップ</a> ＞ <a href="#">医療・相談先</a> ＞ 在宅でリハビリを続けるには？
+    </div>
+    <div class="article-header">
+      <h1>在宅でリハビリを続けるには？<br>訪問看護・訪問リハの役割</h1>
+      <div class="article-meta">
+        <span>公開：2026年6月予定</span>
+        <span>カテゴリ：医療・相談先</span>
+        <span>読了：約7分</span>
+      </div>
+    </div>
+
+    <!-- 監修者ブロック（AI記事感を消す最大のレバー） -->
+    <div class="supervisor-block">
+      <div class="placeholder avatar">PT</div>
+      <div class="supervisor-info">
+        <div class="supervisor-name">監修：高橋〇〇（理学療法士）</div>
+        <div class="supervisor-role">訪問看護ステーションかんな／PT歴〇年</div>
+        <p class="supervisor-comment">
+          「外来リハから訪問リハに切り替える時期に悩む方が多いです。判断の目安と、自宅で続けるためのコツをお伝えします。」
+        </p>
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>設計意図 — 監修者ブロック：</strong>
+      記事冒頭に <strong>顔写真＋肩書き＋一人称コメント30〜50字</strong>。
+      これだけで「誰が書いた記事か」が伝わり、AI記事感が消える。
+    </div>
+
+    <!-- 目次 -->
+    <div class="article-toc">
+      <h3>この記事でわかること</h3>
+      <ol>
+        <li>パーキンソン病にリハビリが重要な理由</li>
+        <li>通院リハビリと訪問リハビリの違い</li>
+        <li>訪問看護ステーションで受けられるリハビリとは</li>
+        <li>訪問リハビリの利用方法（介護保険・医療保険）</li>
+        <li>【現場ノート】かんなでの実際の支援例</li>
+      </ol>
+    </div>
+
+    <!-- 本文 -->
+    <div class="article-body">
+      <h2>1. パーキンソン病にリハビリが重要な理由</h2>
+      <p>パーキンソン病は、薬物療法だけでは生活機能をすべて維持することが難しい疾患です。薬で症状をコントロールしながら、リハビリで運動機能と動作のパターンを保つことが、長く自分らしく暮らすためのカギになります。</p>
+      <h3>運動療法で期待できること</h3>
+      <ul>
+        <li>歩行能力の維持（<a href="#g-disease" class="term-link" title="歩き出しや方向転換の瞬間に足が動かなくなる症状">すくみ足</a>・小刻み歩行への対応）</li>
+        <li>姿勢の維持と転倒予防</li>
+        <li>声量・<a href="#g-care" class="term-link" title="食べ物・飲み物を飲み込みにくくなる症状">嚥下</a>機能の維持</li>
+      </ul>
+
+      <div class="note-box">
+        <strong>設計意図 — 用語ハイライト：</strong>
+        本文中の専門用語に <strong>点線下線＋ホバーで簡易説明</strong> を付け、クリックで用語集の該当エントリへジャンプ。
+        全記事に同じパターンで仕込めば、サイト内回遊率が大きく上がる。<strong>SEO的にも内部リンク密度が上がる</strong>のでGoogleの評価にプラス。
+      </div>
+
+      <h2>2. 通院リハビリと訪問リハビリの違い</h2>
+      <p>進行に伴って通院が難しくなった方も、訪問サービスを使えば自宅でリハビリを続けられます。それぞれのメリットと、切り替えのタイミングを整理します。</p>
+      <p style="color:var(--ink-mute);font-size:13px;">[本文：通院／訪問の比較表が入る予定]</p>
+
+      <h2>3. 訪問看護ステーションで受けられるリハビリとは</h2>
+      <p>訪問看護ステーションには、看護師だけでなく、理学療法士（PT）・作業療法士（OT）・言語聴覚士（ST）が在籍していることがあります。</p>
+      <h3>PT（理学療法士）の役割</h3>
+      <ul>
+        <li>歩行訓練・バランス訓練</li>
+        <li>転倒予防の住環境アドバイス</li>
+        <li>日常動作の練習</li>
+      </ul>
+
+      <!-- 記事中の自然なCTA -->
+      <div class="inline-cta">
+        <div class="inline-cta-text">
+          名古屋市天白区・緑区・名東区で訪問リハをご希望の方は、訪問看護ステーションかんなにご相談ください。
+        </div>
+        <button class="inline-cta-btn">かんなに相談する</button>
+      </div>
+
+      <h2>4. 訪問リハビリの利用方法</h2>
+      <p>介護保険と医療保険、どちらを使うかは状況によって異なります。指定難病の認定を受けている場合は…</p>
+      <p style="color:var(--ink-mute);font-size:13px;">[本文：制度の解説が入る]</p>
+
+      <!-- 現場ノート -->
+      <div class="field-note">
+        <div class="label">現場ノート　— かんなでの実際の支援例</div>
+        <div class="body">
+          ヤール3の70代男性Aさんの場合、外来通院が月1回しか難しくなったタイミングで訪問リハを併用開始。週2回、自宅環境に合わせた歩行訓練と、ご家族への介助方法のレクチャーを行いました。3ヶ月後、屋内移動の自立度が大きく改善しています。
+        </div>
+      </div>
+
+      <div class="note-box">
+        <strong>設計意図 — 現場ノート：</strong>
+        <strong>固有のディテール（地域名・年代・期間・結果）</strong>を入れることで、コピペAI記事から脱する。
+        架空でもよいが、できれば実際のケース（個人特定されない範囲で）を素材にする。
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="faq">
+      <h2>よくある質問</h2>
+      <div class="faq-item">
+        <div class="faq-q">訪問リハは何歳から使えますか？</div>
+        <div class="faq-a">介護保険は原則65歳以上ですが、パーキンソン病は指定難病なので40〜64歳でも特定疾病として介護保険を使えます。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">通院リハと訪問リハは併用できますか？</div>
+        <div class="faq-a">原則どちらか一方ですが、状況により例外もあります。主治医・ケアマネジャーにご相談ください。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">訪問リハだけ受けて訪問看護は受けないこともできますか？</div>
+        <div class="faq-a">可能です。ただし状態の観察も兼ねて、看護師の訪問もセットでお勧めしています。</div>
+      </div>
+    </div>
+
+    <!-- ============ 【固定】会社・サービス情報ブロック（全記事共通） ============ -->
+    <div class="company-block">
+      <!-- 黄色帯：一言サービス紹介 -->
+      <div class="company-band">
+        WELLSYNC は、名古屋市でパーキンソン病など神経難病の在宅・施設ケアを行っています
+      </div>
+
+      <!-- 導入文 -->
+      <div class="company-intro">
+        名古屋市天白区を拠点に、<strong>訪問看護ステーションかんな</strong>と<strong>ナーシングホームかんな</strong>を運営しています。神経難病に対応できる体制づくりに力を入れ、ご本人の在宅生活の継続から、ご自宅での生活が難しくなった後の施設での暮らしまで、地続きでサポートできることが特徴です。
+      </div>
+
+      <!-- 2サービス並列 -->
+      <div class="service-pair">
+        <!-- 訪問看護 -->
+        <div class="service-card">
+          <div class="placeholder service-img">[写真：訪問看護の様子・実写推奨]</div>
+          <div class="service-label">SERVICE 01</div>
+          <div class="service-name">訪問看護ステーションかんな</div>
+          <div class="service-desc">
+            看護師・理学療法士などの専門職がご自宅に伺い、医療的ケアとリハビリを提供します。
+          </div>
+          <ul class="service-features">
+            <li>パーキンソン病の服薬管理・症状観察</li>
+            <li>PT（理学療法士）による訪問リハビリ</li>
+            <li>嚥下・転倒予防の指導</li>
+            <li>ご家族の介護相談・レスパイト支援</li>
+          </ul>
+          <div class="service-meta">
+            介護保険・医療保険対応／指定難病で40歳以上の方も介護保険利用可
+          </div>
+        </div>
+
+        <!-- ナーシングホーム -->
+        <div class="service-card">
+          <div class="placeholder service-img">[写真：ナーシングホーム外観・実写推奨]</div>
+          <div class="service-label">SERVICE 02</div>
+          <div class="service-name">ナーシングホームかんな</div>
+          <div class="service-desc">
+            神経難病の方を積極的に受け入れている住宅型施設。看護師24時間体制で、医療依存度の高い方も安心して暮らせます。
+          </div>
+          <ul class="service-features">
+            <li>神経難病・パーキンソン病の受け入れ実績</li>
+            <li>看護師24時間体制</li>
+            <li>提携訪問診療医との連携</li>
+            <li>施設内リハビリ提供／看取り対応</li>
+          </ul>
+          <div class="service-meta">
+            ご見学はいつでもお受けしています／空き状況はお問い合わせください
+          </div>
+        </div>
+      </div>
+
+      <!-- 対応エリア -->
+      <div class="service-area">
+        <div class="area-label">対応エリア</div>
+        <div class="area-list">名古屋市天白区・緑区・名東区・昭和区　ほか近隣エリア</div>
+        <div class="area-note">※エリア外の方もまずはご相談ください。近隣の事業所をご紹介できる場合があります。</div>
+      </div>
+
+      <!-- 電話・LINEの大ボタン -->
+      <div class="contact-channels">
+        <a href="tel:0000000000" class="tel-btn">
+          <div class="channel-label">お電話でのご相談</div>
+          <div class="channel-main">📞 052-XXX-XXXX</div>
+          <div class="channel-sub">受付：平日 9:00〜18:00</div>
+        </a>
+        <a href="#" class="line-big-btn">
+          <div class="channel-label">LINEで気軽に相談</div>
+          <div class="channel-main">LINEで友だち追加</div>
+          <div class="channel-sub">24時間受付・原則翌営業日までに返信</div>
+        </a>
+      </div>
+
+      <!-- フォーム -->
+      <div class="contact-form-block">
+        <div class="form-heading">
+          <h4>お問い合わせフォーム</h4>
+          <div class="form-note">24時間受付中／原則3営業日以内にご返信</div>
+        </div>
+
+        <div class="form-row">
+          <label>お名前 <span class="req">必須</span></label>
+          <input type="text" placeholder="山田 太郎">
+        </div>
+        <div class="form-row">
+          <label>メールアドレス <span class="req">必須</span></label>
+          <input type="email" placeholder="example@email.com">
+        </div>
+        <div class="form-row">
+          <label>電話番号 <span class="opt">任意</span></label>
+          <input type="tel" placeholder="090-0000-0000">
+        </div>
+        <div class="form-row">
+          <label>ご相談の種類 <span class="opt">任意</span></label>
+          <select>
+            <option>選択してください</option>
+            <option>訪問看護について</option>
+            <option>ナーシングホームについて</option>
+            <option>施設見学の申し込み</option>
+            <option>制度・申請について</option>
+            <option>その他</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>お問い合わせ内容 <span class="req">必須</span></label>
+          <textarea placeholder="ご本人の状況、ご家族の困りごとなど、お気軽にお書きください。"></textarea>
+        </div>
+        <div class="form-consent">
+          <input type="checkbox" id="consent-a1">
+          <label for="consent-a1" style="font-size:11px;color:var(--ink-soft);">個人情報保護方針に同意し、上記内容で送信します。</label>
+        </div>
+        <button class="form-submit">送信する</button>
+      </div>
+
+      <!-- 会社概要 -->
+      <dl class="company-profile">
+        <dt>運営会社</dt>
+        <dd>株式会社〇〇〇〇</dd>
+        <dt>代表者</dt>
+        <dd>石川 〇〇</dd>
+        <dt>所在地</dt>
+        <dd>〒468-0000 愛知県名古屋市天白区〇〇〇〇</dd>
+        <dt>事業内容</dt>
+        <dd>訪問看護ステーションかんな／ナーシングホームかんな</dd>
+        <dt>受付時間</dt>
+        <dd>平日 9:00〜18:00（フォーム・LINEは24時間受付）</dd>
+      </dl>
+    </div>
+
+    <div class="note-box">
+      <strong>設計意図 — 会社情報ブロック（固定）：</strong>
+      参考画像（OIL BEES）の構造を翻訳。<strong>全記事で同じものを末尾に置く</strong>ことで、どの記事から入ったユーザーにも「運営は誰か／どこに連絡すればよいか」を確実に伝える。
+      電話・LINE・フォームの3チャネルを並列に置き、ユーザーが心理的に近い手段を自分で選べるようにする。
+    </div>
+
+    <!-- 記事末尾CTA -->
+    <div class="article-footer-cta">
+      <h3>お困りごとに合わせて、専門職がご相談に乗ります</h3>
+      <p>名古屋市天白区・緑区・名東区で訪問リハ・訪問看護をご希望の方へ</p>
+      <button>LINEで相談</button>
+      <button class="outline">フォームから問い合わせ</button>
+    </div>
+
+    <div class="note-box">
+      <strong>設計意図 — 記事末尾：</strong>
+      <strong>FAQ直後に必ずCTA</strong>。読み終わった瞬間が一番クリックされる。
+      文言は「お問い合わせ」ではなく「お困りごとに合わせて」と悩み起点の言葉で。
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     【優先記事②】施設選びのチェックポイント
+============================================================ -->
+<div class="article-divider"><span class="divider-label">優先記事②</span></div>
+<div class="article-page" id="article2">
+  <div class="article-container">
+    <div class="article-breadcrumb">
+      <a href="#top">トップ</a> ＞ <a href="#">医療・相談先</a> ＞ 施設選びのチェックポイント
+    </div>
+    <div class="article-header">
+      <h1>パーキンソン病の方が<br>施設を選ぶときのチェックポイント</h1>
+      <div class="article-meta">
+        <span>公開：2026年6月予定</span>
+        <span>カテゴリ：医療・相談先</span>
+        <span>読了：約8分</span>
+      </div>
+    </div>
+
+    <div class="supervisor-block">
+      <div class="placeholder avatar">看</div>
+      <div class="supervisor-info">
+        <div class="supervisor-name">監修：〇〇看護師</div>
+        <div class="supervisor-role">ナーシングホームかんな／看護師歴〇年</div>
+        <p class="supervisor-comment">
+          「『神経難病に対応できる施設』と一言でいっても中身は様々です。見学時に必ず聞くべき5つのポイントを整理しました。」
+        </p>
+      </div>
+    </div>
+
+    <div class="article-toc">
+      <h3>この記事でわかること</h3>
+      <ol>
+        <li>在宅継続か施設入居か、判断の目安</li>
+        <li>パーキンソン病の方が施設を選ぶ際の5つのポイント</li>
+        <li>施設の種類と特徴（特養・有料・サ高住・ナーシングホーム）</li>
+        <li>見学時に確認すべきこと</li>
+        <li>【施設紹介】ナーシングホームかんな（天白区）</li>
+      </ol>
+    </div>
+
+    <div class="article-body">
+      <h2>1. 在宅継続か施設入居か、判断の目安</h2>
+      <p>多くの方が悩むのが「いつまで在宅で頑張れるか」の判断です。医学的な観点だけでなく、ご家族の介護負担、住環境、経済面など複数の観点で見ていきます。</p>
+
+      <h2>2. パーキンソン病の方が施設を選ぶ際の5つのポイント</h2>
+      <h3>① 神経難病への対応経験</h3>
+      <p>パーキンソン病に対応した経験のある施設かどうか。受け入れ実績の有無をまず確認します。</p>
+      <h3>② リハビリ体制</h3>
+      <p>機能維持のためのリハビリが日常的に提供されているか。PT・OT・STの配置状況。</p>
+      <h3>③ 医療連携（訪問診療との連携）</h3>
+      <p>協力医療機関の有無、訪問診療医との連携体制。</p>
+      <h3>④ 夜間の対応体制</h3>
+      <p>夜間の看護師配置、緊急時の体制。</p>
+      <h3>⑤ 看取りへの対応</h3>
+      <p>最期まで対応してくれる施設か、状態によっては転院が必要か。</p>
+
+      <h2>3. 施設の種類と特徴</h2>
+      <p style="color:var(--ink-mute);font-size:13px;">[本文：特養・有料・サ高住・ナーシングホームの比較表が入る予定]</p>
+
+      <h2>4. 見学時に確認すべきこと</h2>
+      <ul>
+        <li>看護師は日中・夜間それぞれ何人配置されているか</li>
+        <li>パーキンソン病の入居者は何人くらいいるか</li>
+        <li>服薬時間の柔軟性はあるか（時間どおりに薬を飲めるか）</li>
+        <li>転倒対応の方針</li>
+      </ul>
+
+      <div class="field-note">
+        <div class="label">現場ノート　— ナーシングホームかんなの場合</div>
+        <div class="body">
+          天白区にあるナーシングホームかんなでは、神経難病の方の受け入れに力を入れています。看護師24時間体制、提携訪問診療医との連携、施設内でのリハビリ提供が特徴です。見学はいつでもお受けしています。
+        </div>
+      </div>
+
+      <div class="inline-cta">
+        <div class="inline-cta-text">
+          ナーシングホームかんなの見学・空き状況のお問い合わせは、こちらから。
+        </div>
+        <button class="inline-cta-btn">見学を申し込む</button>
+      </div>
+    </div>
+
+    <div class="faq">
+      <h2>よくある質問</h2>
+      <div class="faq-item">
+        <div class="faq-q">特養とナーシングホームの違いは？</div>
+        <div class="faq-a">特養は要介護3以上が原則。ナーシングホームは医療依存度が高い方も受け入れ可能なケースが多く、看護師配置が手厚い傾向。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">入居後に状態が悪化した場合は？</div>
+        <div class="faq-a">施設によって対応が異なります。看取り対応の可否は入居前に必ず確認を。</div>
+      </div>
+    </div>
+
+    <!-- ============ 【固定】会社・サービス情報ブロック ============ -->
+    <div class="company-block">
+      <div class="company-band">
+        WELLSYNC は、名古屋市でパーキンソン病など神経難病の在宅・施設ケアを行っています
+      </div>
+      <div class="company-intro">
+        名古屋市天白区を拠点に、<strong>訪問看護ステーションかんな</strong>と<strong>ナーシングホームかんな</strong>を運営しています。神経難病に対応できる体制づくりに力を入れ、ご本人の在宅生活の継続から、ご自宅での生活が難しくなった後の施設での暮らしまで、地続きでサポートできることが特徴です。
+      </div>
+      <div class="service-pair">
+        <div class="service-card">
+          <div class="placeholder service-img">[写真：訪問看護の様子・実写推奨]</div>
+          <div class="service-label">SERVICE 01</div>
+          <div class="service-name">訪問看護ステーションかんな</div>
+          <div class="service-desc">看護師・理学療法士などの専門職がご自宅に伺い、医療的ケアとリハビリを提供します。</div>
+          <ul class="service-features">
+            <li>パーキンソン病の服薬管理・症状観察</li>
+            <li>PT（理学療法士）による訪問リハビリ</li>
+            <li>嚥下・転倒予防の指導</li>
+            <li>ご家族の介護相談・レスパイト支援</li>
+          </ul>
+          <div class="service-meta">介護保険・医療保険対応／指定難病で40歳以上の方も介護保険利用可</div>
+        </div>
+        <div class="service-card">
+          <div class="placeholder service-img">[写真：ナーシングホーム外観・実写推奨]</div>
+          <div class="service-label">SERVICE 02</div>
+          <div class="service-name">ナーシングホームかんな</div>
+          <div class="service-desc">神経難病の方を積極的に受け入れている住宅型施設。看護師24時間体制で、医療依存度の高い方も安心して暮らせます。</div>
+          <ul class="service-features">
+            <li>神経難病・パーキンソン病の受け入れ実績</li>
+            <li>看護師24時間体制</li>
+            <li>提携訪問診療医との連携</li>
+            <li>施設内リハビリ提供／看取り対応</li>
+          </ul>
+          <div class="service-meta">ご見学はいつでもお受けしています／空き状況はお問い合わせください</div>
+        </div>
+      </div>
+      <div class="service-area">
+        <div class="area-label">対応エリア</div>
+        <div class="area-list">名古屋市天白区・緑区・名東区・昭和区　ほか近隣エリア</div>
+        <div class="area-note">※エリア外の方もまずはご相談ください。近隣の事業所をご紹介できる場合があります。</div>
+      </div>
+      <div class="contact-channels">
+        <a href="tel:0000000000" class="tel-btn">
+          <div class="channel-label">お電話でのご相談</div>
+          <div class="channel-main">📞 052-XXX-XXXX</div>
+          <div class="channel-sub">受付：平日 9:00〜18:00</div>
+        </a>
+        <a href="#" class="line-big-btn">
+          <div class="channel-label">LINEで気軽に相談</div>
+          <div class="channel-main">LINEで友だち追加</div>
+          <div class="channel-sub">24時間受付・原則翌営業日までに返信</div>
+        </a>
+      </div>
+      <div class="contact-form-block">
+        <div class="form-heading">
+          <h4>お問い合わせフォーム</h4>
+          <div class="form-note">24時間受付中／原則3営業日以内にご返信</div>
+        </div>
+        <div class="form-row"><label>お名前 <span class="req">必須</span></label><input type="text" placeholder="山田 太郎"></div>
+        <div class="form-row"><label>メールアドレス <span class="req">必須</span></label><input type="email" placeholder="example@email.com"></div>
+        <div class="form-row"><label>電話番号 <span class="opt">任意</span></label><input type="tel" placeholder="090-0000-0000"></div>
+        <div class="form-row"><label>ご相談の種類 <span class="opt">任意</span></label>
+          <select><option>選択してください</option><option>訪問看護について</option><option>ナーシングホームについて</option><option>施設見学の申し込み</option><option>制度・申請について</option><option>その他</option></select>
+        </div>
+        <div class="form-row"><label>お問い合わせ内容 <span class="req">必須</span></label><textarea placeholder="ご本人の状況、ご家族の困りごとなど、お気軽にお書きください。"></textarea></div>
+        <div class="form-consent">
+          <input type="checkbox" id="consent-a2">
+          <label for="consent-a2" style="font-size:11px;color:var(--ink-soft);">個人情報保護方針に同意し、上記内容で送信します。</label>
+        </div>
+        <button class="form-submit">送信する</button>
+      </div>
+      <dl class="company-profile">
+        <dt>運営会社</dt><dd>株式会社〇〇〇〇</dd>
+        <dt>代表者</dt><dd>石川 〇〇</dd>
+        <dt>所在地</dt><dd>〒468-0000 愛知県名古屋市天白区〇〇〇〇</dd>
+        <dt>事業内容</dt><dd>訪問看護ステーションかんな／ナーシングホームかんな</dd>
+        <dt>受付時間</dt><dd>平日 9:00〜18:00（フォーム・LINEは24時間受付）</dd>
+      </dl>
+    </div>
+
+    <div class="article-footer-cta">
+      <h3>施設選びに迷ったら、まずはご相談ください</h3>
+      <p>ナーシングホームかんなでは、入居検討中の方のご相談に個別で対応しています</p>
+      <button>LINEで相談</button>
+      <button class="outline">見学を申し込む</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     【優先記事③】難病申請の流れ
+============================================================ -->
+<div class="article-divider"><span class="divider-label">優先記事③</span></div>
+<div class="article-page" id="article3">
+  <div class="article-container">
+    <div class="article-breadcrumb">
+      <a href="#top">トップ</a> ＞ <a href="#">制度・お金</a> ＞ 難病申請の流れ
+    </div>
+    <div class="article-header">
+      <h1>【図解】難病申請の<br>流れと必要書類</h1>
+      <div class="article-meta">
+        <span>公開：2026年6月予定</span>
+        <span>カテゴリ：制度・お金</span>
+        <span>読了：約6分</span>
+      </div>
+    </div>
+
+    <div class="supervisor-block">
+      <div class="placeholder avatar">MSW</div>
+      <div class="supervisor-info">
+        <div class="supervisor-name">監修：〇〇MSW</div>
+        <div class="supervisor-role">医療ソーシャルワーカー／〇〇病院</div>
+        <p class="supervisor-comment">
+          「書類の準備で何度も差し戻されてしまう方が多いです。最初に押さえるべきポイントをまとめました。」
+        </p>
+      </div>
+    </div>
+
+    <div class="article-toc">
+      <h3>この記事でわかること</h3>
+      <ol>
+        <li>指定難病制度とは（医療費助成の概要）</li>
+        <li>申請の流れ（タイムスケジュール図解）</li>
+        <li>必要書類チェックリスト</li>
+        <li>よくあるつまずきポイント</li>
+        <li>申請が通らなかったときの対応</li>
+      </ol>
+    </div>
+
+    <div class="article-body">
+      <h2>1. 指定難病制度とは</h2>
+      <p>パーキンソン病は国の指定難病に認定されており、一定の条件を満たすと医療費の自己負担が軽減されます。</p>
+
+      <h2>2. 申請の流れ</h2>
+      <p>申請から認定までは <strong>約3ヶ月</strong> かかります。下記のタイムスケジュールで進めます。</p>
+      <div class="placeholder wide" style="margin:20px 0;">[図解：申請のタイムスケジュール（4ステップ）]</div>
+
+      <h2>3. 必要書類チェックリスト</h2>
+      <ul>
+        <li>申請書（自治体のホームページからダウンロード）</li>
+        <li>臨床調査個人票（指定医に依頼）</li>
+        <li>住民票</li>
+        <li>世帯の所得を証明する書類</li>
+        <li>健康保険証のコピー</li>
+        <li>個人番号確認書類</li>
+      </ul>
+
+      <h2>4. よくあるつまずきポイント</h2>
+      <p>臨床調査個人票は <strong>指定医</strong> が記入する必要があります。普段かかっている主治医が指定医でない場合、別途指定医のいる医療機関での診察が必要になります。</p>
+
+      <div class="field-note">
+        <div class="label">現場ノート　— かんなの相談事例</div>
+        <div class="body">
+          申請手続きに不安のある方は、医療ソーシャルワーカー（MSW）への相談がお勧めです。WELLSYNCでは申請手続きのサポートもお受けしています。
+        </div>
+      </div>
+
+      <div class="inline-cta">
+        <div class="inline-cta-text">
+          難病申請の手続きでお困りの方は、WELLSYNCのスタッフがサポートします。
+        </div>
+        <button class="inline-cta-btn">申請サポートを相談</button>
+      </div>
+    </div>
+
+    <div class="faq">
+      <h2>よくある質問</h2>
+      <div class="faq-item">
+        <div class="faq-q">申請から認定までどのくらいかかりますか？</div>
+        <div class="faq-a">通常2〜3ヶ月程度です。書類に不備があるとさらに時間がかかります。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">毎年更新が必要ですか？</div>
+        <div class="faq-a">はい、原則1年ごとの更新が必要です。期限の数ヶ月前から準備を。</div>
+      </div>
+    </div>
+
+    <!-- ============ 【固定】会社・サービス情報ブロック ============ -->
+    <div class="company-block">
+      <div class="company-band">
+        WELLSYNC は、名古屋市でパーキンソン病など神経難病の在宅・施設ケアを行っています
+      </div>
+      <div class="company-intro">
+        名古屋市天白区を拠点に、<strong>訪問看護ステーションかんな</strong>と<strong>ナーシングホームかんな</strong>を運営しています。神経難病に対応できる体制づくりに力を入れ、ご本人の在宅生活の継続から、ご自宅での生活が難しくなった後の施設での暮らしまで、地続きでサポートできることが特徴です。
+      </div>
+      <div class="service-pair">
+        <div class="service-card">
+          <div class="placeholder service-img">[写真:訪問看護の様子・実写推奨]</div>
+          <div class="service-label">SERVICE 01</div>
+          <div class="service-name">訪問看護ステーションかんな</div>
+          <div class="service-desc">看護師・理学療法士などの専門職がご自宅に伺い、医療的ケアとリハビリを提供します。</div>
+          <ul class="service-features">
+            <li>パーキンソン病の服薬管理・症状観察</li>
+            <li>PT（理学療法士）による訪問リハビリ</li>
+            <li>嚥下・転倒予防の指導</li>
+            <li>ご家族の介護相談・レスパイト支援</li>
+          </ul>
+          <div class="service-meta">介護保険・医療保険対応／指定難病で40歳以上の方も介護保険利用可</div>
+        </div>
+        <div class="service-card">
+          <div class="placeholder service-img">[写真:ナーシングホーム外観・実写推奨]</div>
+          <div class="service-label">SERVICE 02</div>
+          <div class="service-name">ナーシングホームかんな</div>
+          <div class="service-desc">神経難病の方を積極的に受け入れている住宅型施設。看護師24時間体制で、医療依存度の高い方も安心して暮らせます。</div>
+          <ul class="service-features">
+            <li>神経難病・パーキンソン病の受け入れ実績</li>
+            <li>看護師24時間体制</li>
+            <li>提携訪問診療医との連携</li>
+            <li>施設内リハビリ提供／看取り対応</li>
+          </ul>
+          <div class="service-meta">ご見学はいつでもお受けしています／空き状況はお問い合わせください</div>
+        </div>
+      </div>
+      <div class="service-area">
+        <div class="area-label">対応エリア</div>
+        <div class="area-list">名古屋市天白区・緑区・名東区・昭和区　ほか近隣エリア</div>
+        <div class="area-note">※エリア外の方もまずはご相談ください。近隣の事業所をご紹介できる場合があります。</div>
+      </div>
+      <div class="contact-channels">
+        <a href="tel:0000000000" class="tel-btn">
+          <div class="channel-label">お電話でのご相談</div>
+          <div class="channel-main">📞 052-XXX-XXXX</div>
+          <div class="channel-sub">受付：平日 9:00〜18:00</div>
+        </a>
+        <a href="#" class="line-big-btn">
+          <div class="channel-label">LINEで気軽に相談</div>
+          <div class="channel-main">LINEで友だち追加</div>
+          <div class="channel-sub">24時間受付・原則翌営業日までに返信</div>
+        </a>
+      </div>
+      <div class="contact-form-block">
+        <div class="form-heading">
+          <h4>お問い合わせフォーム</h4>
+          <div class="form-note">24時間受付中／原則3営業日以内にご返信</div>
+        </div>
+        <div class="form-row"><label>お名前 <span class="req">必須</span></label><input type="text" placeholder="山田 太郎"></div>
+        <div class="form-row"><label>メールアドレス <span class="req">必須</span></label><input type="email" placeholder="example@email.com"></div>
+        <div class="form-row"><label>電話番号 <span class="opt">任意</span></label><input type="tel" placeholder="090-0000-0000"></div>
+        <div class="form-row"><label>ご相談の種類 <span class="opt">任意</span></label>
+          <select><option>選択してください</option><option>訪問看護について</option><option>ナーシングホームについて</option><option>施設見学の申し込み</option><option>制度・申請について</option><option>その他</option></select>
+        </div>
+        <div class="form-row"><label>お問い合わせ内容 <span class="req">必須</span></label><textarea placeholder="ご本人の状況、ご家族の困りごとなど、お気軽にお書きください。"></textarea></div>
+        <div class="form-consent">
+          <input type="checkbox" id="consent-a3">
+          <label for="consent-a3" style="font-size:11px;color:var(--ink-soft);">個人情報保護方針に同意し、上記内容で送信します。</label>
+        </div>
+        <button class="form-submit">送信する</button>
+      </div>
+      <dl class="company-profile">
+        <dt>運営会社</dt><dd>株式会社〇〇〇〇</dd>
+        <dt>代表者</dt><dd>石川 〇〇</dd>
+        <dt>所在地</dt><dd>〒468-0000 愛知県名古屋市天白区〇〇〇〇</dd>
+        <dt>事業内容</dt><dd>訪問看護ステーションかんな／ナーシングホームかんな</dd>
+        <dt>受付時間</dt><dd>平日 9:00〜18:00（フォーム・LINEは24時間受付）</dd>
+      </dl>
+    </div>
+
+    <div class="article-footer-cta">
+      <h3>申請手続きのサポートもいたします</h3>
+      <p>制度の手続きに迷ったら、まずはお気軽にお問い合わせください</p>
+      <button>LINEで相談</button>
+      <button class="outline">フォームから問い合わせ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     【優先記事④】ウェアリングオフ
+============================================================ -->
+<div class="article-divider"><span class="divider-label">優先記事④</span></div>
+<div class="article-page" id="article4">
+  <div class="article-container">
+    <div class="article-breadcrumb">
+      <a href="#top">トップ</a> ＞ <a href="#">治療を知る</a> ＞ ウェアリングオフとは？
+    </div>
+    <div class="article-header">
+      <h1>ウェアリングオフとは？<br>症状と対処法</h1>
+      <div class="article-meta">
+        <span>公開：2026年6月予定</span>
+        <span>カテゴリ：治療を知る</span>
+        <span>読了：約7分</span>
+      </div>
+    </div>
+
+    <div class="supervisor-block">
+      <div class="placeholder avatar">看</div>
+      <div class="supervisor-info">
+        <div class="supervisor-name">監修：〇〇看護師</div>
+        <div class="supervisor-role">訪問看護ステーションかんな／看護師歴〇年</div>
+        <p class="supervisor-comment">
+          「ご本人が『薬の効きが悪い時間がある』と感じたら、まず記録から始めましょう。主治医への伝え方も解説します。」
+        </p>
+      </div>
+    </div>
+
+    <div class="article-toc">
+      <h3>この記事でわかること</h3>
+      <ol>
+        <li>ウェアリングオフとは何か</li>
+        <li>なぜ起こるのか（薬の効き方の変化）</li>
+        <li>自分で気づくサイン</li>
+        <li>主治医への相談のしかた（服薬日記の書き方）</li>
+        <li>調整方法・対処法の選択肢</li>
+      </ol>
+    </div>
+
+    <div class="article-body">
+      <h2>1. ウェアリングオフとは何か</h2>
+      <p>パーキンソン病の治療薬（特にレボドパ）を長期間使用していると、薬が効いている時間（オン）と効いていない時間（オフ）の差がはっきりしてくることがあります。これを「ウェアリングオフ現象」と呼びます。</p>
+
+      <h2>2. なぜ起こるのか</h2>
+      <p>パーキンソン病の進行に伴って、脳内でドパミンを蓄える神経細胞が減少し、薬の効果が長続きしにくくなるためと考えられています。</p>
+
+      <h2>3. 自分で気づくサイン</h2>
+      <ul>
+        <li>薬を飲んでから1〜2時間で症状が戻ってくる</li>
+        <li>次の服薬時間の前に動きにくくなる</li>
+        <li>朝起きたときに体が動きにくい時間が長い</li>
+      </ul>
+
+      <h2>4. 主治医への相談のしかた</h2>
+      <p>診察時に「最近薬の効きが悪い気がする」と漠然と伝えるよりも、 <strong>服薬日記</strong> を持参すると主治医も判断しやすくなります。</p>
+      <div class="placeholder wide" style="margin:20px 0;">[図解：服薬日記の書き方サンプル（時刻×症状の表）]</div>
+
+      <div class="field-note">
+        <div class="label">現場ノート　— 訪問看護での観察</div>
+        <div class="body">
+          訪問看護では、服薬時間と症状の変化を一緒に記録していくことで、主治医への報告材料を作るお手伝いをしています。記録があるのとないのとでは、薬の調整精度が大きく変わります。
+        </div>
+      </div>
+
+      <div class="inline-cta">
+        <div class="inline-cta-text">
+          服薬管理や症状の記録に不安がある方は、訪問看護で一緒に整えていきます。
+        </div>
+        <button class="inline-cta-btn">かんなに相談する</button>
+      </div>
+
+      <h2>5. 調整方法・対処法の選択肢</h2>
+      <p>主治医の判断で、薬の種類・量・服薬回数の調整、補助薬の追加などが行われます。詳しくは主治医にご相談ください。</p>
+    </div>
+
+    <div class="faq">
+      <h2>よくある質問</h2>
+      <div class="faq-item">
+        <div class="faq-q">ウェアリングオフは必ず起こりますか？</div>
+        <div class="faq-a">レボドパ服用5年で約半数の方に現れるといわれます。誰にでも起こりうる現象です。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">薬を勝手に増やしてもよいですか？</div>
+        <div class="faq-a">必ず主治医に相談してください。自己判断での増量はジスキネジアなどの副作用につながります。</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">DBSの適応はどう判断しますか？</div>
+        <div class="faq-a">薬物療法での調整が難しくなった段階で検討されます。専門医にご相談ください。</div>
+      </div>
+    </div>
+
+    <!-- ============ 【固定】会社・サービス情報ブロック ============ -->
+    <div class="company-block">
+      <div class="company-band">
+        WELLSYNC は、名古屋市でパーキンソン病など神経難病の在宅・施設ケアを行っています
+      </div>
+      <div class="company-intro">
+        名古屋市天白区を拠点に、<strong>訪問看護ステーションかんな</strong>と<strong>ナーシングホームかんな</strong>を運営しています。神経難病に対応できる体制づくりに力を入れ、ご本人の在宅生活の継続から、ご自宅での生活が難しくなった後の施設での暮らしまで、地続きでサポートできることが特徴です。
+      </div>
+      <div class="service-pair">
+        <div class="service-card">
+          <div class="placeholder service-img">[写真:訪問看護の様子・実写推奨]</div>
+          <div class="service-label">SERVICE 01</div>
+          <div class="service-name">訪問看護ステーションかんな</div>
+          <div class="service-desc">看護師・理学療法士などの専門職がご自宅に伺い、医療的ケアとリハビリを提供します。</div>
+          <ul class="service-features">
+            <li>パーキンソン病の服薬管理・症状観察</li>
+            <li>PT（理学療法士）による訪問リハビリ</li>
+            <li>嚥下・転倒予防の指導</li>
+            <li>ご家族の介護相談・レスパイト支援</li>
+          </ul>
+          <div class="service-meta">介護保険・医療保険対応／指定難病で40歳以上の方も介護保険利用可</div>
+        </div>
+        <div class="service-card">
+          <div class="placeholder service-img">[写真:ナーシングホーム外観・実写推奨]</div>
+          <div class="service-label">SERVICE 02</div>
+          <div class="service-name">ナーシングホームかんな</div>
+          <div class="service-desc">神経難病の方を積極的に受け入れている住宅型施設。看護師24時間体制で、医療依存度の高い方も安心して暮らせます。</div>
+          <ul class="service-features">
+            <li>神経難病・パーキンソン病の受け入れ実績</li>
+            <li>看護師24時間体制</li>
+            <li>提携訪問診療医との連携</li>
+            <li>施設内リハビリ提供／看取り対応</li>
+          </ul>
+          <div class="service-meta">ご見学はいつでもお受けしています／空き状況はお問い合わせください</div>
+        </div>
+      </div>
+      <div class="service-area">
+        <div class="area-label">対応エリア</div>
+        <div class="area-list">名古屋市天白区・緑区・名東区・昭和区　ほか近隣エリア</div>
+        <div class="area-note">※エリア外の方もまずはご相談ください。近隣の事業所をご紹介できる場合があります。</div>
+      </div>
+      <div class="contact-channels">
+        <a href="tel:0000000000" class="tel-btn">
+          <div class="channel-label">お電話でのご相談</div>
+          <div class="channel-main">📞 052-XXX-XXXX</div>
+          <div class="channel-sub">受付：平日 9:00〜18:00</div>
+        </a>
+        <a href="#" class="line-big-btn">
+          <div class="channel-label">LINEで気軽に相談</div>
+          <div class="channel-main">LINEで友だち追加</div>
+          <div class="channel-sub">24時間受付・原則翌営業日までに返信</div>
+        </a>
+      </div>
+      <div class="contact-form-block">
+        <div class="form-heading">
+          <h4>お問い合わせフォーム</h4>
+          <div class="form-note">24時間受付中／原則3営業日以内にご返信</div>
+        </div>
+        <div class="form-row"><label>お名前 <span class="req">必須</span></label><input type="text" placeholder="山田 太郎"></div>
+        <div class="form-row"><label>メールアドレス <span class="req">必須</span></label><input type="email" placeholder="example@email.com"></div>
+        <div class="form-row"><label>電話番号 <span class="opt">任意</span></label><input type="tel" placeholder="090-0000-0000"></div>
+        <div class="form-row"><label>ご相談の種類 <span class="opt">任意</span></label>
+          <select><option>選択してください</option><option>訪問看護について</option><option>ナーシングホームについて</option><option>施設見学の申し込み</option><option>制度・申請について</option><option>その他</option></select>
+        </div>
+        <div class="form-row"><label>お問い合わせ内容 <span class="req">必須</span></label><textarea placeholder="ご本人の状況、ご家族の困りごとなど、お気軽にお書きください。"></textarea></div>
+        <div class="form-consent">
+          <input type="checkbox" id="consent-a4">
+          <label for="consent-a4" style="font-size:11px;color:var(--ink-soft);">個人情報保護方針に同意し、上記内容で送信します。</label>
+        </div>
+        <button class="form-submit">送信する</button>
+      </div>
+      <dl class="company-profile">
+        <dt>運営会社</dt><dd>株式会社〇〇〇〇</dd>
+        <dt>代表者</dt><dd>石川 〇〇</dd>
+        <dt>所在地</dt><dd>〒468-0000 愛知県名古屋市天白区〇〇〇〇</dd>
+        <dt>事業内容</dt><dd>訪問看護ステーションかんな／ナーシングホームかんな</dd>
+        <dt>受付時間</dt><dd>平日 9:00〜18:00（フォーム・LINEは24時間受付）</dd>
+      </dl>
+    </div>
+
+    <div class="article-footer-cta">
+      <h3>服薬や症状の記録をサポートします</h3>
+      <p>訪問看護では、服薬管理と症状観察を一緒に整えていきます</p>
+      <button>LINEで相談</button>
+      <button class="outline">訪問看護について</button>
+    </div>
+
+    <div class="note-box">
+      <strong>設計意図 — 全記事共通テンプレ：</strong>
+      ① 監修者ブロック → ② 目次 → ③ 本文（H2＋H3＋画像＋現場ノート＋途中CTA）→ ④ FAQ → ⑤ 末尾CTA。
+      この型を <strong>全記事で統一</strong> することで、ユーザーが「次に何が来るか」を学習し、迷わず相談導線にたどり着ける。
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     【用語集ページ】
+============================================================ -->
+<div class="article-divider"><span class="divider-label">用語集ページ</span></div>
+<div class="glossary-page" id="glossary">
+  <!-- ヒアロ -->
+  <div class="glossary-hero">
+    <div class="container">
+      <div class="article-breadcrumb" style="margin-bottom:16px;">
+        <a href="#top">トップ</a> ＞ 用語集
+      </div>
+      <h1>パーキンソン病 用語集</h1>
+      <p>
+        診察・申請・介護の場面で出てくる専門用語を、やさしい言葉で解説しています。
+        各用語に関連する記事へのリンクも付けていますので、知りたいことから読み進めてください。
+      </p>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="glossary-layout">
+      <!-- 左側固定TOC -->
+      <aside class="glossary-toc-sticky">
+        <h4>カテゴリ一覧</h4>
+        <ul>
+          <li><a href="#g-disease">01　病気・症状<span class="toc-count">5語</span></a></li>
+          <li><a href="#g-treatment">02　治療・薬<span class="toc-count">5語</span></a></li>
+          <li><a href="#g-care">03　ケア・リハビリ<span class="toc-count">4語</span></a></li>
+          <li><a href="#g-system">04　制度・お金<span class="toc-count">4語</span></a></li>
+          <li><a href="#g-facility">05　医療・施設<span class="toc-count">4語</span></a></li>
+        </ul>
+      </aside>
+
+      <!-- 用語本体 -->
+      <div>
+
+        <!-- グループ1：病気・症状 -->
+        <div class="glossary-group" id="g-disease">
+          <div class="glossary-group-head">
+            <span class="group-num">01</span>
+            <h2>病気・症状</h2>
+            <span class="group-meta">5語</span>
+          </div>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">パーキンソン病</span>
+              <span class="glossary-reading">ぱーきんそんびょう</span>
+              <span class="glossary-en">Parkinson's disease</span>
+            </div>
+            <p class="glossary-def">
+              脳の黒質という部分でドパミンを作る神経細胞が減少することで起こる、進行性の神経疾患。手足の震え、動作の遅さ、筋肉のこわばり、姿勢の不安定さといった運動症状を特徴とします。便秘、睡眠障害、うつなど運動以外の症状も伴います。日本では指定難病に認定されています。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">パーキンソン病とは</a>
+              <a href="#">4大症状</a>
+              <a href="#">診断方法</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">ヤール分類</span>
+              <span class="glossary-reading">やーるぶんるい</span>
+              <span class="glossary-en">Hoehn &amp; Yahr scale</span>
+            </div>
+            <p class="glossary-def">
+              パーキンソン病の進行度を1〜5の5段階で示す国際的な評価尺度。1度は片側のみの軽い症状、5度は車椅子または寝たきりの状態。難病申請や介護保険の判定にも用いられ、ご家族にとっても進行の目安を把握する重要な指標となります。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">進行ステージ</a>
+              <a href="#">難病申請の流れ</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">すくみ足</span>
+              <span class="glossary-reading">すくみあし</span>
+              <span class="glossary-en">freezing of gait</span>
+            </div>
+            <p class="glossary-def">
+              歩き出しや方向転換の瞬間に、足が地面に張り付いたように動かなくなる症状。狭い場所や人混みで起こりやすく、転倒の大きな原因となります。「1・2・1・2」と声を出す、床に線を引くなどの工夫で改善することがあります。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">転倒予防</a>
+              <a href="#">在宅でリハビリを続けるには？</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">ジスキネジア</span>
+              <span class="glossary-reading">じすきねじあ</span>
+              <span class="glossary-en">dyskinesia</span>
+            </div>
+            <p class="glossary-def">
+              パーキンソン病治療薬（特にレボドパ）を長期使用すると現れる、自分の意思とは関係なく体が動いてしまう不随意運動。薬が効きすぎている時間帯に起こりやすく、薬の量や種類の調整で対応します。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">薬の調整</a>
+              <a href="#">ウェアリングオフとは？</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">非運動症状</span>
+              <span class="glossary-reading">ひうんどうしょうじょう</span>
+              <span class="glossary-en">non-motor symptoms</span>
+            </div>
+            <p class="glossary-def">
+              手足の症状以外に現れる症状の総称。便秘、睡眠障害、うつ、認知機能の低下、幻覚、自律神経症状（めまい・排尿障害）などを含みます。運動症状より先に現れることもあり、ご家族の気づきが診断のきっかけになることもあります。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">非運動症状</a>
+              <a href="#">レビー小体型認知症との関係</a>
+            </div>
+          </article>
+        </div>
+
+        <!-- グループ2：治療・薬 -->
+        <div class="glossary-group" id="g-treatment">
+          <div class="glossary-group-head">
+            <span class="group-num">02</span>
+            <h2>治療・薬</h2>
+            <span class="group-meta">5語</span>
+          </div>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">レボドパ</span>
+              <span class="glossary-reading">れぼどぱ</span>
+              <span class="glossary-en">L-DOPA / Levodopa</span>
+            </div>
+            <p class="glossary-def">
+              パーキンソン病治療の中心となる薬。体内でドパミンに変換され、不足したドパミンを補います。効果が高い一方で、長期使用で効き目の時間が短くなる「ウェアリングオフ」や、不随意運動「ジスキネジア」が現れることがあります。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">薬物療法の基本</a>
+              <a href="#">レボドパ・ドパミンアゴニスト</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">ウェアリングオフ</span>
+              <span class="glossary-reading">うぇありんぐおふ</span>
+              <span class="glossary-en">wearing-off phenomenon</span>
+            </div>
+            <p class="glossary-def">
+              レボドパなどの治療薬の効果が、次の服薬時間より前に切れてしまう現象。服薬から1〜2時間で症状が戻る、朝起きたときに動きにくいといったサインで気づきます。服薬日記をつけて主治医に相談することが対処の第一歩です。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#article4">ウェアリングオフとは？</a>
+              <a href="#">薬の調整</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">DBS（脳深部刺激療法）</span>
+              <span class="glossary-reading">でぃーびーえす</span>
+              <span class="glossary-en">Deep Brain Stimulation</span>
+            </div>
+            <p class="glossary-def">
+              脳に細い電極を留置し、電気刺激を送ることで運動症状を改善する外科治療。薬物療法だけでは症状のコントロールが難しくなった段階で検討されます。すべての方が対象になるわけではなく、専門医による適応判断が必要です。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">DBS（脳深部刺激療法）</a>
+              <a href="#">最新治療・研究情報</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">デュオドーパ</span>
+              <span class="glossary-reading">でゅおどーぱ</span>
+              <span class="glossary-en">Duodopa</span>
+            </div>
+            <p class="glossary-def">
+              小腸に直接レボドパを持続的に注入する経腸療法。胃に小さな穴を開けてチューブを留置し、ポンプで薬を送り込みます。ウェアリングオフが強い方の症状を安定させる選択肢の一つ。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">デュオドーパ（経腸療法）</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">ドパミンアゴニスト</span>
+              <span class="glossary-reading">どぱみんあごにすと</span>
+              <span class="glossary-en">dopamine agonist</span>
+            </div>
+            <p class="glossary-def">
+              ドパミンと似た働きをして神経を刺激する薬。レボドパと併用することで、ウェアリングオフの軽減や薬の効果時間を延ばす目的で使われます。眠気や衝動制御障害などの副作用に注意が必要です。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">レボドパ・ドパミンアゴニスト</a>
+            </div>
+          </article>
+        </div>
+
+        <!-- グループ3：ケア・リハビリ -->
+        <div class="glossary-group" id="g-care">
+          <div class="glossary-group-head">
+            <span class="group-num">03</span>
+            <h2>ケア・リハビリ</h2>
+            <span class="group-meta">4語</span>
+          </div>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">LSVT BIG</span>
+              <span class="glossary-reading">えるえすぶいてぃーびっぐ</span>
+              <span class="glossary-en">Lee Silverman Voice Treatment BIG</span>
+            </div>
+            <p class="glossary-def">
+              パーキンソン病の方向けに開発されたリハビリ手法。「大きく動く」ことを徹底的に練習することで、小さくなりがちな動作を改善します。認定を受けた理学療法士・作業療法士が指導し、4週間集中して取り組むのが基本。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">運動・体操</a>
+              <a href="#article1">在宅でリハビリを続けるには？</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">嚥下障害</span>
+              <span class="glossary-reading">えんげしょうがい</span>
+              <span class="glossary-en">dysphagia</span>
+            </div>
+            <p class="glossary-def">
+              食べ物や飲み物を飲み込みにくくなる症状。むせ、食事に時間がかかる、体重減少、誤嚥性肺炎などの形で現れます。言語聴覚士（ST）による嚥下訓練、食事形態の工夫、姿勢の調整で予防・改善が可能です。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">誤嚥を防ぐ食事のコツ</a>
+              <a href="#">食事・栄養管理</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">レスパイトケア</span>
+              <span class="glossary-reading">れすぱいとけあ</span>
+              <span class="glossary-en">respite care</span>
+            </div>
+            <p class="glossary-def">
+              介護をするご家族が一時的に休息をとるためのサービス。ショートステイ（短期入所）、デイサービス、訪問介護などを組み合わせて利用します。「家族が倒れない介護」のために、罪悪感を持たずに使うことが推奨されます。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">介護疲れ・家族のセルフケア</a>
+              <a href="#">レスパイトケアの活用</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">ADL（日常生活動作）</span>
+              <span class="glossary-reading">えーでぃーえる</span>
+              <span class="glossary-en">Activities of Daily Living</span>
+            </div>
+            <p class="glossary-def">
+              食事、着替え、入浴、トイレ、移動など、生活のなかで毎日行う基本的な動作の総称。リハビリや介護では、これをどれだけ自分でできるかが状態評価の重要な指標になります。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">「できること」を奪わない関わり方</a>
+            </div>
+          </article>
+        </div>
+
+        <!-- グループ4：制度・お金 -->
+        <div class="glossary-group" id="g-system">
+          <div class="glossary-group-head">
+            <span class="group-num">04</span>
+            <h2>制度・お金</h2>
+            <span class="group-meta">4語</span>
+          </div>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">指定難病</span>
+              <span class="glossary-reading">していなんびょう</span>
+              <span class="glossary-en">designated intractable disease</span>
+            </div>
+            <p class="glossary-def">
+              国が定める医療費助成の対象となる病気。パーキンソン病もこの対象で、認定されると医療費の自己負担額が軽減されます。申請には指定医による「臨床調査個人票」の記入が必要で、所得に応じた自己負担上限額が設定されます。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#article3">難病申請の流れ</a>
+              <a href="#">指定難病制度の概要</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">特定疾病</span>
+              <span class="glossary-reading">とくていしっぺい</span>
+              <span class="glossary-en">specified disease</span>
+            </div>
+            <p class="glossary-def">
+              40〜64歳でも介護保険を利用できる16の病気のこと。パーキンソン病はこの一つで、65歳未満でも要介護認定を受ければ介護保険サービス（訪問看護・訪問リハ・デイサービスなど）を使えます。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">介護保険の使い方</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">高額療養費制度</span>
+              <span class="glossary-reading">こうがくりょうようひせいど</span>
+              <span class="glossary-en">High-cost Medical Care Benefit</span>
+            </div>
+            <p class="glossary-def">
+              1か月の医療費が一定額を超えたとき、超えた分が払い戻される公的制度。所得や年齢で上限が変わります。指定難病の助成と併用すれば、自己負担はさらに軽減されます。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">高額療養費制度</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">障害者手帳</span>
+              <span class="glossary-reading">しょうがいしゃてちょう</span>
+              <span class="glossary-en">disability certificate</span>
+            </div>
+            <p class="glossary-def">
+              障害の程度に応じて交付される手帳。パーキンソン病で進行が進んだ方は、身体障害者手帳（肢体不自由）や精神障害者保健福祉手帳の対象となる場合があります。税の控除、公共料金の割引、福祉サービスの利用などにつながります。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">障害者手帳の取得</a>
+            </div>
+          </article>
+        </div>
+
+        <!-- グループ5：医療・施設 -->
+        <div class="glossary-group" id="g-facility">
+          <div class="glossary-group-head">
+            <span class="group-num">05</span>
+            <h2>医療・施設</h2>
+            <span class="group-meta">4語</span>
+          </div>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">訪問看護</span>
+              <span class="glossary-reading">ほうもんかんご</span>
+              <span class="glossary-en">home-visit nursing</span>
+            </div>
+            <p class="glossary-def">
+              看護師や理学療法士などがご自宅に伺い、医療的ケアやリハビリを提供するサービス。介護保険・医療保険どちらも利用可能で、パーキンソン病の方は服薬管理、症状観察、リハビリ、ご家族の介護相談などを受けられます。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#article1">在宅でリハビリを続けるには？</a>
+              <a href="#">訪問看護とは</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">ナーシングホーム</span>
+              <span class="glossary-reading">なーしんぐほーむ</span>
+              <span class="glossary-en">nursing home</span>
+            </div>
+            <p class="glossary-def">
+              看護師の配置が手厚く、医療依存度の高い方も受け入れられる住宅型施設の総称。神経難病やがん末期の方など、特養や一般的な有料老人ホームでは対応が難しい方の選択肢となります。法律上の正式な呼称ではなく、施設ごとに体制は異なります。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#article2">施設選びのチェックポイント</a>
+              <a href="#">ナーシングホームという選択肢</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">医療ソーシャルワーカー（MSW）</span>
+              <span class="glossary-reading">えむえすだぶりゅー</span>
+              <span class="glossary-en">Medical Social Worker</span>
+            </div>
+            <p class="glossary-def">
+              病院などで患者さんやご家族の生活・経済面の相談に乗る専門職。難病申請のサポート、退院後の生活設計、施設探しの相談などを担います。多くの病院に配置されており、無料で相談できます。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">相談窓口一覧</a>
+              <a href="#article3">難病申請の流れ</a>
+            </div>
+          </article>
+
+          <article class="glossary-entry">
+            <div class="glossary-entry-head">
+              <span class="glossary-term">ケアマネジャー</span>
+              <span class="glossary-reading">けあまねじゃー</span>
+              <span class="glossary-en">care manager</span>
+            </div>
+            <p class="glossary-def">
+              介護保険サービスを利用する際の調整役。ケアプラン（介護サービス計画書）の作成、サービス事業者との連絡、家族の相談対応を行います。要介護認定を受けたら、まずケアマネジャーを決めるのが介護生活のスタートです。
+            </p>
+            <div class="glossary-related">
+              <span class="glossary-related-label">関連記事：</span>
+              <a href="#">介護保険の使い方</a>
+              <a href="#">相談窓口一覧</a>
+            </div>
+          </article>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="note-box">
+      <strong>設計意図 — 用語集ページ（SEO観点）：</strong>
+      <strong>5グループ × 4〜5語 = 22語</strong> でスタートし、随時追加していく構成。
+      各エントリは <strong>「用語名・読み・英語・定義・関連記事リンク」</strong> の構造で、Googleの構造化データ（DefinedTerm スキーマ）に対応させやすい設計。
+      左の <strong>固定TOC</strong> は、長いページのスクロール疲れを防ぎ、各グループへ直接ジャンプできる導線になる。
+      関連記事タグは <strong>内部リンクのハブ</strong> として機能し、サイト全体のページ評価を底上げする。
+    </div>
+
+    <!-- 用語集ページの末尾CTA -->
+    <div class="article-footer-cta">
+      <h3>用語の意味を知ったら、専門職に相談を</h3>
+      <p>「自分の場合はどうなのか」を聞きたい方は、お気軽にご連絡ください</p>
+      <button>LINEで相談</button>
+      <button class="outline">フォームから問い合わせ</button>
+    </div>
+  </div>
+</div>
+
+<!-- 戻るボタン -->
+<div style="text-align:center;padding:40px 0 80px;background:var(--bg);">
+  <a href="#top" style="color:var(--accent);text-decoration:none;font-family:var(--serif);font-size:14px;">↑ トップに戻る</a>
+</div>
+
+</body>
+</html>
